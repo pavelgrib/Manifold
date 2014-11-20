@@ -4,9 +4,11 @@ import CoreLocation
 import MapKit
 
 
-class MasterViewController: UITableViewController, CLLocationManagerDelegate {
-
-  var locationMgr : CLLocationManager?
+class MasterViewController: UITableViewController, CLLocationManagerDelegate, ESTBeaconDelegate {
+  
+  var locationMgr: CLLocationManager?
+  var httpReqMgr: AFHTTPRequestOperationManager?
+  var beaconMgr: ESTBeaconManager?
   
   override func awakeFromNib() {
     super.awakeFromNib()
@@ -14,6 +16,8 @@ class MasterViewController: UITableViewController, CLLocationManagerDelegate {
 
   override func viewDidLoad() {
     super.viewDidLoad()
+    
+    var beaconRegion = ESTBeaconRegion(proximityUUID: <#NSUUID!#>, identifier: <#String!#>)
   }
   
   override func viewDidAppear(animated: Bool) {
@@ -38,6 +42,7 @@ class MasterViewController: UITableViewController, CLLocationManagerDelegate {
     } else {
       println("location services not enabled")
     }
+    
   }
 
   override func didReceiveMemoryWarning() {

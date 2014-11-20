@@ -3,4 +3,3 @@ xcodeproj  'Manifold.xcodeproj'
 
 pod 'AFNetworking'
 pod 'EstimoteSDK'
-pod 'ARAnalytics'
