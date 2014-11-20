@@ -3,12 +3,25 @@ import UIKit
 import CoreLocation
 import MapKit
 
+struct Beacon {
+  var uuid: String
+  var major: Int
+  var minor: Int
+}
+
+func loadBeacons(filepath: NSString) -> [Beacon] {
+  // open file and read data into beacon objects
+  // return list
+  
+  return []
+}
 
 class MasterViewController: UITableViewController, CLLocationManagerDelegate, ESTBeaconDelegate {
   
   var locationMgr: CLLocationManager?
   var httpReqMgr: AFHTTPRequestOperationManager?
   var beaconMgr: ESTBeaconManager?
+  var beacons = loadBeacons("beacons.json")
   
   override func awakeFromNib() {
     super.awakeFromNib()
@@ -16,8 +29,8 @@ class MasterViewController: UITableViewController, CLLocationManagerDelegate, ES
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    
-    var beaconRegion = ESTBeaconRegion(proximityUUID: <#NSUUID!#>, identifier: <#String!#>)
+    let uuid = NSUUID(UUIDString: beacons[0].uuid)
+    var beaconRegion = ESTBeaconRegion(proximityUUID: uuid, identifier: "default", secured: false)
   }
   
   override func viewDidAppear(animated: Bool) {
