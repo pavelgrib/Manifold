@@ -1,19 +1,43 @@
 
 import UIKit
-import CoreData
-
-class MasterViewController: UITableViewController {
-
-  var managedObjectContext: NSManagedObjectContext? = nil
+import CoreLocation
+import MapKit
 
 
+class MasterViewController: UITableViewController, CLLocationManagerDelegate {
+
+  var locationMgr : CLLocationManager?
+  
   override func awakeFromNib() {
     super.awakeFromNib()
   }
 
   override func viewDidLoad() {
     super.viewDidLoad()
-
+  }
+  
+  override func viewDidAppear(animated: Bool) {
+    super.viewDidAppear(animated)
+    
+    if CLLocationManager.locationServicesEnabled() {
+      switch CLLocationManager.authorizationStatus() {
+      case .Authorized:
+        initLocationMgr(startImmediately: true)
+      case .AuthorizedWhenInUse:
+        initLocationMgr(startImmediately: true)
+      case .Denied:
+        displayAlert("not determined", msg: "location services not enabled in app")
+      case .NotDetermined:
+        initLocationMgr(startImmediately: false)
+        if let manager = self.locationMgr {
+          manager.requestWhenInUseAuthorization()
+        }
+      case .Restricted:
+        displayAlert("Restricted", msg: "location services not enabled in app")
+      }
+    } else {
+      println("location services not enabled")
+    }
   }
 
   override func didReceiveMemoryWarning() {
@@ -78,50 +102,43 @@ class MasterViewController: UITableViewController {
 //    let object = self.fetchedResultsController.objectAtIndexPath(indexPath) as NSManagedObject
 //    cell.textLabel.text = object.valueForKey("timeStamp")!.description
   }
-
-  func controllerWillChangeContent(controller: NSFetchedResultsController) {
-      self.tableView.beginUpdates()
+  
+  // MARK: - Location
+  
+  func locationManager(manager: CLLocationManager!, didUpdateToLocation newLocation: CLLocation!, fromLocation oldLocation: CLLocation!) {
+    println("lat \(newLocation.coordinate.latitude) and lon \(newLocation.coordinate.longitude)")
   }
-
-  func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-      switch type {
-          case .Insert:
-              self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-          case .Delete:
-              self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: .Fade)
-          default:
-              return
+  
+  func locationManager(manager: CLLocationManager!, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+    switch CLLocationManager.authorizationStatus() {
+    case .Authorized:
+      println("authorized")
+    case .AuthorizedWhenInUse:
+      println("authorize when used")
+    case .NotDetermined:
+      println("not determined")
+    case .Restricted:
+      println("Restricted")
+    default:
+      println("unhandled")
+    }
+  }
+  
+  func displayAlert(title: String, msg: String) {
+    let controller = UIAlertController(title: title, message: msg, preferredStyle: .Alert)
+    controller.addAction(UIAlertAction(title: "OK", style: .Default, handler: nil))
+  }
+  
+  func initLocationMgr(#startImmediately: Bool) {
+    locationMgr = CLLocationManager()
+    if let manager = locationMgr {
+      println("created location mgr")
+      manager.delegate = self
+      if startImmediately {
+        manager.startUpdatingLocation()
       }
+    }
   }
-
-  func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-      switch type {
-          case .Insert:
-              tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
-          case .Delete:
-              tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-          case .Update:
-              self.configureCell(tableView.cellForRowAtIndexPath(indexPath!)!, atIndexPath: indexPath!)
-          case .Move:
-              tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: .Fade)
-              tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: .Fade)
-          default:
-              return
-      }
-  }
-
-  func controllerDidChangeContent(controller: NSFetchedResultsController) {
-      self.tableView.endUpdates()
-  }
-
-  /*
-   // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
-   
-   func controllerDidChangeContent(controller: NSFetchedResultsController) {
-       // In the simplest, most efficient, case, reload the table view.
-       self.tableView.reloadData()
-   }
-   */
 
 }
 
